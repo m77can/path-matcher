@@ -1,7 +1,6 @@
 use std::collections::HashMap;
 
 use regex::{Regex, RegexBuilder};
-use substring::Substring;
 
 static DEFAULT_PATH_SEPARATOR: &'static str = "/";
 
@@ -240,7 +239,7 @@ impl AntPathMatcher {
         &mut self,
         pattern: &str,
         str: &str,
-         uri_template_variables: &mut Option<HashMap<String, String>>,
+        uri_template_variables: &mut Option<HashMap<String, String>>,
     ) -> bool {
         let string_matcher = self.get_string_matcher(pattern);
         string_matcher.match_string(str, uri_template_variables)
@@ -446,11 +445,11 @@ impl AntPathStringMatcher {
                         variable_names.push(match_.trim_matches('{').trim_matches('}').to_string());
                     }
                     Some(idx) => {
-                        let variable_pattern = match_.substring(idx + 1, match_.len() - 1);
+                        let variable_pattern = substring(match_, idx + 1, match_.len() - 1);
                         pattern_builder.push_str("(");
-                        pattern_builder.push_str(variable_pattern);
+                        pattern_builder.push_str(variable_pattern.as_str());
                         pattern_builder.push_str(")");
-                        let variable_name = match_.substring(1, idx);
+                        let variable_name = substring(match_, 1, idx);
                         variable_names.push(variable_name.to_string());
                     }
                 }
@@ -494,7 +493,7 @@ impl AntPathStringMatcher {
     pub fn match_string(
         &self,
         str: &str,
-         uri_template_variables: &mut Option<HashMap<String, String>>,
+        uri_template_variables: &mut Option<HashMap<String, String>>,
     ) -> bool {
         if self.exact_match {
             return if self.case_sensitive {
@@ -533,11 +532,19 @@ impl AntPathStringMatcher {
     }
 }
 
+fn substring(str: &str, begin: usize, end: usize) -> String {
+    let mut builder = String::new();
+    for i in begin..end {
+        builder.push(str.chars().nth(i).unwrap());
+    }
+    return builder;
+}
+
 fn quote(s: &str, start: usize, end: usize) -> String {
     if start == end {
         return "".to_string();
     }
-    return regex::escape(s.substring(start, end));
+    return regex::escape(substring(s, start, end).as_str());
 }
 
 fn matches(regex: &Regex, s: &str) -> bool {
