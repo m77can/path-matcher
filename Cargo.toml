@@ -10,4 +10,3 @@ name = "path_matcher"
 
 [dependencies]
 regex = "1.5.4"
-substring = "1.4.5"
